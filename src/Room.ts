@@ -32,12 +32,14 @@ export const assignRoom = (ws: WebSocketOP): boolean => {
   if (!rooms[room_id].rightClient) {
     ws.roomId = room_id;
     rooms[room_id].rightClient = ws;
+    if(!rooms[room_id].leftClient) emptyRoomQueue.push(room_id);
     return true;
   }
 
   else if (!rooms[room_id].leftClient) {
     ws.roomId = room_id;
     rooms[room_id].leftClient = ws;
+    if(!rooms[room_id].rightClient) emptyRoomQueue.push(room_id);
     return true;
   }
 

@@ -1,3 +1,6 @@
+import { setMaxListeners } from 'events';
+import { ClientRequest } from 'http';
+import { client } from 'websocket';
 import WebSocket, { WebSocketOP } from 'ws'
 import { rooms, emptyRoomQueue } from '../src/Room';
 
@@ -80,5 +83,33 @@ describe('initial connection', () => {
     client3.socket.close();
     client4.socket.close();
   }) 
+
+
+  test('2 players join and one leaves and a new player joins', async () => {
+    const client1 = await createConnection();
+    const client2 = await createConnection();
+    client1.socket.close();
+    await waitForSocketState(client1.socket,client1.socket.CLOSED);
+    const client3 = await createConnection();
+    expect(client2.roomId).toBe(client3.roomId);
+    client2.socket.close();
+    client3.socket.close();
+  })
+
+  test('n players', async() => {
+    const n = Number(process.argv.filter(arg => arg.startsWith('-n_clients='))[0].split('=')[1]);
+    let rooms:{[key:string]:number} = {};
+    let sockets:WebSocketOP[] = [];
+    for(let i=0;i<n;i++){
+      const client = await createConnection();
+      rooms[client.roomId] = rooms[client.roomId] ? rooms[client.roomId]++ : 0; 
+      sockets.push(client.socket);  
+    }
+
+    for(let i=0;i<n;i++){
+      sockets[i].close();
+    }
+    expect(Object.keys(rooms).length).toBe(n/2);
+  },20000)
 
 })
