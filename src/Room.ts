@@ -55,13 +55,16 @@ export const createRoomAndAssign = (ws: WebSocketOP) => {
 export const unassignSocketFromRoom = (ws: WebSocketOP) => {
   const room = rooms[ws.roomId];
 
-
   if (room.leftClient && room.leftClient.id === ws.id) {
+    if(!room.rightClient) deleteRoom(room.id);
     room.leftClient = null;
     emptyRoomQueue.push(room.id);
     rooms[ws.roomId] = room;
   }
   else if (room.rightClient && room.rightClient.id === ws.id) {
-    deleteRoom(room.id);
+    if(!room.leftClient) deleteRoom(room.id);
+    room.rightClient = null;
+    emptyRoomQueue.push(room.id);
+    rooms[ws.roomId] = room;
   }
 }
