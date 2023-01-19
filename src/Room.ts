@@ -13,6 +13,9 @@ class Room {
   }
 }
 
+const RIGHT = 'RIGHT';
+const LEFT = 'LEFT';
+
 
 export let rooms: { [key: string]: Room } = {};
 
@@ -31,6 +34,7 @@ export const assignRoom = (ws: WebSocketOP): boolean => {
 
   if (!rooms[room_id].rightClient) {
     ws.roomId = room_id;
+    ws.side = RIGHT;
     rooms[room_id].rightClient = ws;
     if(!rooms[room_id].leftClient) emptyRoomQueue.push(room_id);
     return true;
@@ -38,6 +42,7 @@ export const assignRoom = (ws: WebSocketOP): boolean => {
 
   else if (!rooms[room_id].leftClient) {
     ws.roomId = room_id;
+    ws.side = LEFT;
     rooms[room_id].leftClient = ws;
     if(!rooms[room_id].rightClient) emptyRoomQueue.push(room_id);
     return true;
@@ -49,6 +54,7 @@ export const assignRoom = (ws: WebSocketOP): boolean => {
 export const createRoomAndAssign = (ws: WebSocketOP) => {
   const newRoom = new Room(ws);
   ws.roomId = newRoom.id;
+  ws.side = RIGHT;
   newRoom.rightClient = ws;
   emptyRoomQueue.push(newRoom.id);
   rooms[newRoom.id] = newRoom;
@@ -69,4 +75,9 @@ export const unassignSocketFromRoom = (ws: WebSocketOP) => {
     emptyRoomQueue.push(room.id);
     rooms[ws.roomId] = room;
   }
+}
+
+export const getOpponent = (ws: WebSocketOP):WebSocketOP | null => {
+  if(ws.side === 'RIGHT') return rooms[ws.roomId].leftClient;
+  else return rooms[ws.roomId].rightClient;
 }
